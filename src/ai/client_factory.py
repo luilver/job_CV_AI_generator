@@ -5,11 +5,12 @@ from typing import Any
 
 from openai import OpenAI
 
+from .anthropic_client import AnthropicRESTClient
 from .gemini_client import GeminiRESTClient
 
 
 def call_ai(client: Any, provider: str, model: str, system: str, prompt: str, json_mode: bool = True) -> str:
-    if provider == "Gemini 2.5 Flash":
+    if provider in {"Gemini 2.5 Flash", "Anthropic"}:
         content = client.generate(model, system, prompt, json_mode)
     elif provider == "Codex":
         kwargs = {"model": model, "input": [{"role": "developer", "content": system}, {"role": "user", "content": prompt}]}
@@ -31,6 +32,8 @@ def call_ai(client: Any, provider: str, model: str, system: str, prompt: str, js
 def make_client(provider: str, api_key: str) -> Any:
     if provider == "Gemini 2.5 Flash":
         return GeminiRESTClient(api_key)
+    if provider == "Anthropic":
+        return AnthropicRESTClient(api_key)
     if provider == "Groq":
         return OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
     return OpenAI(api_key=api_key)

@@ -40,6 +40,8 @@ If you are on Windows, **please use Git Bash** or **WSL** to run `make` commands
 
 Relies on AI. You will need to provide an **API key for any AI** service of your choice.
 
+Supported providers: **OpenAI GPT**, **Codex**, **Gemini 2.5 Flash**, **Groq**, and **Anthropic (Claude)**. Set the key in the sidebar; it is stored locally in `credentials.json`.
+
 **Advice:** Edit `CV_guidelines.md` and `CL_guidelines.md` in the project root to guide generation. These files are passed to the AI as context, together with your CV and job description, to personalise your outputs.
 
 ---

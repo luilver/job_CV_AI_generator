@@ -20,6 +20,7 @@ def load_credentials() -> Dict[str, str]:
         "codex_api_key": "",
         "gemini_api_key": "",
         "groq_api_key": "",
+        "anthropic_api_key": "",
     }
     # 1) Streamlit secrets (Cloud)
     if st is not None and hasattr(st, "secrets"):
@@ -56,6 +57,7 @@ def load_credentials() -> Dict[str, str]:
         "codex_api_key": "CODEX_API_KEY",
         "gemini_api_key": "GEMINI_API_KEY",
         "groq_api_key": "GROQ_API_KEY",
+        "anthropic_api_key": "ANTHROPIC_API_KEY",
     }
     for k, env in env_map.items():
         if env in os.environ:

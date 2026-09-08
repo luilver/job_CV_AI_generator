@@ -79,12 +79,13 @@ def main() -> None:
     st.caption("Compare a LaTeX CV with a live job description, then generate a focused version.")
     with st.sidebar:
         st.header("Configuration")
-        provider = st.selectbox("AI provider", ["OpenAI GPT", "Codex", "Gemini 2.5 Flash", "Groq"])
+        provider = st.selectbox("AI provider", ["OpenAI GPT", "Codex", "Gemini 2.5 Flash", "Groq", "Anthropic"])
         credential_name = {
             "OpenAI GPT": "openai_api_key",
             "Codex": "codex_api_key",
             "Gemini 2.5 Flash": "gemini_api_key",
             "Groq": "groq_api_key",
+            "Anthropic": "anthropic_api_key",
         }[provider]
         api_key = st.text_input(
             f"{provider} API Key",
@@ -116,6 +117,13 @@ def main() -> None:
                 st.warning("Gemini 2.5 Flash is a legacy choice and may be unavailable to new users. Use Gemini 3.6 Flash if you receive a 404.")
         elif provider == "Groq":
             model = st.selectbox("Groq model", ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "openai/gpt-oss-20b"], index=0)
+        elif provider == "Anthropic":
+            model = st.selectbox(
+                "Claude model",
+                ["claude-sonnet-5", "claude-opus-4-8", "claude-haiku-4-5-20251001", "claude-sonnet-4-6"],
+                index=0,
+                help="Claude model IDs from the Anthropic Messages API. Update if a model is retired.",
+            )
         else:
             model = st.selectbox("GPT model", ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"], index=0)
         uploaded = st.file_uploader("Upload CV (.tex)", type=["tex"])
