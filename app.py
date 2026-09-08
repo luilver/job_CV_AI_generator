@@ -6,6 +6,7 @@ import hashlib
 from pathlib import Path
 from typing import Any
 
+import requests
 import streamlit as st
 
 from src.utils.config_loader import load_credentials, save_credential, read_guidelines, read_cover_letter_guidelines
