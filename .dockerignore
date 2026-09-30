@@ -1,0 +1,28 @@
+# Never bake secrets or local state into the image.
+.streamlit/secrets.toml
+credentials.json
+.env
+data/
+*.db
+*.db.bak-*
+
+# Local dev artefacts
+.venv/
+venv/
+.git/
+.gitignore
+.pytest_cache/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Docs and images are not needed at runtime
+README.md
+TODO.md
+LICENSE
+images/

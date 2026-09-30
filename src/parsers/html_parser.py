@@ -39,7 +39,9 @@ def scrape_job(url: str) -> str:
             return text
     except requests.RequestException:
         pass
-    jina_url = "https://r.jina.ai/http://" + url.split("://", 1)[-1]
+    # r.jina.ai needs the full target URL, scheme included — Oracle-style sites
+    # refuse plain http, and the reader answers 422 if it cannot connect.
+    jina_url = "https://r.jina.ai/" + url
     jina_response = requests.get(jina_url, headers={"User-Agent": "job-cv-matcher/1.0"}, timeout=REQUEST_TIMEOUT)
     jina_response.raise_for_status()
     jina_text = extract_job_sections(jina_response.text)

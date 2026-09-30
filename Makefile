@@ -1,4 +1,4 @@
-.PHONY: setup install run test clean
+.PHONY: setup install run restart test clean
 
 # Detect native Windows (CMD/PowerShell) and block it with a helpful message
 ifeq ($(OS),Windows_NT)
@@ -12,22 +12,26 @@ endif
 
 VENV=.venv
 PYTHON=$(VENV)/bin/python
-PIP=$(VENV)/bin/pip
 
 setup:
 	python3 -m venv $(VENV)
-	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements.txt
+	$(PYTHON) -m pip install --upgrade pip
+	$(PYTHON) -m pip install -r requirements.txt
 	@if [ ! -f credentials.json ]; then cp credentials.json.example credentials.json; fi
 
 install:
-	python3 -m pip install -r requirements.txt
+	$(PYTHON) -m pip install -r requirements.txt
 
 run:
-	$(PYTHON) -m streamlit run app.py
+	$(PYTHON) -m streamlit run landing.py
+
+restart:
+	@pkill -f "streamlit run" 2>/dev/null || true
+	@sleep 1
+	$(PYTHON) -m streamlit run landing.py
 
 test:
-	pytest tests
+	$(PYTHON) -m pytest tests
 
 clean:
 	rm -rf __pycache__ .pytest_cache $(VENV) *.pyc

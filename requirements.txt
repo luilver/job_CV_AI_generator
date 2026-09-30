@@ -2,5 +2,8 @@ streamlit
 requests
 beautifulsoup4
 openai
+pypdf
 python-dotenv
 pytest
+# No extra packages needed: auth uses stdlib sqlite3 + hashlib;
+# PayPal integration uses requests (already listed above).

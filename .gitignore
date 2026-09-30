@@ -11,6 +11,9 @@ credentials.json
 .env
 .streamlit/secrets.toml
 
+# Local SQLite database (users, subscriptions, orders)
+data/
+
 # VSCode
 .vscode/
 credentials.json
