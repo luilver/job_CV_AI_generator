@@ -5,7 +5,7 @@ from __future__ import annotations
 import smtplib
 from email.message import EmailMessage
 
-from src.utils.config_loader import app_base_url, load_smtp_config, smtp_port, smtp_use_starttls
+from src.utils.config_loader import confirm_base_url, load_smtp_config, smtp_port, smtp_use_starttls
 
 TOKEN_TTL_HOURS = 24
 
@@ -44,8 +44,9 @@ def is_configured() -> bool:
 
 
 def confirmation_url(token: str) -> str:
-    # /confirm is a dedicated route so Cloudflare Access can exempt just that path.
-    return f"{app_base_url()}/confirm?verify={token}"
+    # Defaults to the app's /confirm route. When APP_CONFIRM_BASE_URL is set the link
+    # goes to that hostname instead, so it can be reachable without a Cloudflare login.
+    return f"{confirm_base_url()}?verify={token}"
 
 
 def _auth_headers(config: dict[str, str]) -> tuple[str, str, int, bool]:

@@ -217,6 +217,18 @@ def test_connection_error_is_wrapped(monkeypatch):
     assert "smtp.gmail.com:465" in str(exc.value)
 
 
+def test_confirm_base_url_override_wins(monkeypatch):
+    configure(monkeypatch, APP_CONFIRM_BASE_URL="https://confirm.luilver.com/")
+    assert config_loader.confirm_base_url() == "https://confirm.luilver.com"
+    assert mailer.confirmation_url("tok") == "https://confirm.luilver.com?verify=tok"
+
+
+def test_confirm_base_url_defaults_to_the_confirm_route(monkeypatch):
+    configure(monkeypatch)
+    assert config_loader.confirm_base_url() == "https://jobcv.example.com/confirm"
+    assert mailer.confirmation_url("tok") == "https://jobcv.example.com/confirm?verify=tok"
+
+
 def test_base_url_strips_trailing_slash(monkeypatch):
     configure(monkeypatch, APP_BASE_URL="https://jobcv.example.com/")
     assert mailer.confirmation_url("t") == "https://jobcv.example.com/confirm?verify=t"

@@ -212,6 +212,20 @@ def app_base_url() -> str:
     return base.rstrip("/")
 
 
+def confirm_base_url() -> str:
+    """
+    Base URL for the confirmation link.
+
+    Defaults to the app itself (/confirm route). Set APP_CONFIRM_BASE_URL when the
+    link must live on a hostname that is reachable without a Cloudflare Access
+    login, e.g. https://confirm.luilver.com
+    """
+    override = _lookup_secret("APP_CONFIRM_BASE_URL")
+    if override:
+        return override.rstrip("/")
+    return f"{app_base_url()}/confirm"
+
+
 def smtp_port() -> int:
     raw = load_smtp_config().get("SMTP_PORT", "465")
     try:
