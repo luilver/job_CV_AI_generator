@@ -15,7 +15,7 @@ import os
 
 import pytest
 
-SECRET_PREFIXES = ("SMTP_", "APP_BASE_URL", "PAYPAL_", "PLATFORM_", "FREE_TIER_", "OPENAI_")
+SECRET_PREFIXES = ("SMTP_", "APP_BASE_URL", "APP_CONFIRM_BASE_URL", "PAYPAL_", "PLATFORM_", "FREE_TIER_", "OPENAI_")
 
 
 def pytest_configure(config):
