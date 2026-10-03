@@ -178,6 +178,16 @@ def test_rank_sorts_by_score_desc():
     assert scores == sorted(scores, reverse=True)
 
 
+def test_prefilter_is_not_diluted_by_a_large_skill_profile():
+    # A real CV yields dozens of skills. Dividing by the whole profile made even a
+    # strong match fall below the gate, so coverage saturates instead.
+    big = SKILLS + [f"Unrelated Skill {i}" for i in range(45)]
+    assert len(big) == 60
+    job = {**CARD_PYTHON, "description": DETAIL_PYTHON["description"]}
+    assert prefilter_score(job, big) >= 25
+    assert prefilter_score(job, SKILLS) >= 25
+
+
 def test_tokenize_drops_stopwords():
     tokens = tokenize("the and of Python Kubernetes")
     assert "python" in tokens and "kubernetes" in tokens

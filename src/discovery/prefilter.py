@@ -18,6 +18,12 @@ from typing import Any, Iterable
 # single coincidental word should never open the LLM budget.
 MIN_ABSOLUTE_HITS = 3
 
+# How many of the applicant's skills appearing in the body is "as sure as it
+# gets". Coverage saturates here instead of being a ratio over the whole profile:
+# a ratio makes every score fall as the CV yields more skills, so a 60-skill
+# profile could never clear a fixed gate no matter how good the match.
+COVERAGE_SATURATION = 10
+
 # How many of the applicant's skills appearing in the title is "as sure as it
 # gets". Past this the title term saturates.
 TITLE_SATURATION = 6
@@ -123,13 +129,14 @@ def prefilter_score(job: dict[str, Any], skills: list[str]) -> int:
     Heuristic 0-100 estimate that a posting fits the applicant.
 
     Two signals, combined: what share of the applicant's skills the posting asks
-    for (coverage), and how many of them appear in the posting's title (the title
-    is the strongest single hint that a job is really theirs).
+    for (coverage, saturating at COVERAGE_SATURATION so a long CV does not
+    dilute it), and how many of them appear in the posting's title (the title is
+    the strongest single hint that a job is really theirs).
 
-    The absolute value is not a match percentage. With a fifteen-skill profile a
-    strong posting scores around 45 and an excellent one near 70, because a single
-    posting will never name every skill the applicant has. Treat min_prefilter as
-    a gate to keep high recall, not as "80% match".
+    The absolute value is not a match percentage. A posting that names a handful
+    of the applicant's core skills scores in the fifties; a posting that merely
+    shares one word stays at zero through MIN_ABSOLUTE_HITS. Treat min_prefilter
+    as a gate to keep high recall, not as "80% match".
     """
     if not skills:
         return 0
@@ -138,15 +145,14 @@ def prefilter_score(job: dict[str, Any], skills: list[str]) -> int:
     body_tokens = tokenize(job.get("description", ""))
     all_tokens = title_tokens | body_tokens
 
-    total = len(skills)
     coverage_hits = matched_skills(skills, all_tokens)
     title_hits = matched_skills(skills, title_tokens)
 
     if len(coverage_hits) < MIN_ABSOLUTE_HITS:
         return 0
 
-    coverage = len(coverage_hits) / total
-    title_ratio = min(1.0, len(title_hits) / max(1, min(total, TITLE_SATURATION)))
+    coverage = min(1.0, len(coverage_hits) / max(1, COVERAGE_SATURATION))
+    title_ratio = min(1.0, len(title_hits) / max(1, min(len(skills), TITLE_SATURATION)))
     score = 100 * (COVERAGE_WEIGHT * coverage + TITLE_WEIGHT * title_ratio)
     return max(0, min(100, round(score)))
 
