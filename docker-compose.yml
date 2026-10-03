@@ -8,3 +8,15 @@ services:
       - ./:/app
     environment:
       - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  # Runs the daily LinkedIn discovery pass. It polls, but the once-a-day stamp
+  # in the database is what stops a duplicate digest, so restarts are harmless.
+  worker:
+    build: .
+    command: python scripts/daily_digest_worker.py
+    volumes:
+      - ./:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
