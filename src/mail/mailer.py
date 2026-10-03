@@ -70,8 +70,17 @@ def auth_hint(host: str, sender: str, detail: str = "") -> str:
     return body
 
 
-def send_mail(to_email: str, subject: str, body_text: str, body_html: str = "") -> None:
-    """Send one message. Raises EmailError with a readable reason on failure."""
+def send_mail(
+    to_email: str,
+    subject: str,
+    body_text: str,
+    body_html: str = "",
+    attachments: tuple[tuple[str, str, str], ...] = (),
+) -> None:
+    """Send one message. Raises EmailError with a readable reason on failure.
+
+    Each attachment is (filename, content, mimetype).
+    """
     config = load_smtp_config()
     password = config.get("SMTP_APP_PASSWORD", "")
     if not password:
@@ -88,6 +97,15 @@ def send_mail(to_email: str, subject: str, body_text: str, body_html: str = "") 
     message.set_content(body_text)
     if body_html:
         message.add_alternative(body_html, subtype="html")
+    for filename, content, mimetype in attachments or ():
+        if not filename or not content:
+            continue
+        message.add_attachment(
+            str(content).encode("utf-8"),
+            maintype=mimetype.split("/", 1)[0] if "/" in mimetype else "text",
+            subtype=mimetype.split("/", 1)[1] if "/" in mimetype else "plain",
+            filename=str(filename),
+        )
 
     try:
         if use_starttls:
