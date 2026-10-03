@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 160" width="520" height="160" role="img" aria-labelledby="logoTitle logoDesc">
+  <title id="logoTitle">Job-CV AI Generator</title>
+  <desc id="logoDesc">A CV document sheet with an AI spark, beside the Job-CV AI Generator wordmark.</desc>
+
+  <!-- Document sheet -->
+  <rect x="40" y="18" width="88" height="116" rx="16" fill="#eef2ff" stroke="#6366f1" stroke-width="7"/>
+  <g fill="#6366f1">
+    <rect x="60" y="52" width="40" height="9" rx="4.5"/>
+    <rect x="60" y="72" width="48" height="9" rx="4.5" opacity="0.75"/>
+    <rect x="60" y="92" width="32" height="9" rx="4.5" opacity="0.55"/>
+  </g>
+
+  <!-- AI spark: centre (130,38), R30, white stroke separates it from the sheet border -->
+  <path d="M130 8 C130 27.5 140.5 38 160 38 C140.5 38 130 48.5 130 68 C130 48.5 119.5 38 100 38 C119.5 38 130 27.5 130 8 Z"
+        fill="#6366f1" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"/>
+
+  <!-- Wordmark -->
+  <text x="196" y="82"
+        font-family="'Inter','Segoe UI','Helvetica Neue',system-ui,-apple-system,Arial,sans-serif"
+        font-size="56" font-weight="800" letter-spacing="-1.5" fill="#4f46e5">Job-CV</text>
+  <text x="200" y="110"
+        font-family="'Inter','Segoe UI','Helvetica Neue',system-ui,-apple-system,Arial,sans-serif"
+        font-size="16" font-weight="700" letter-spacing="5" fill="#6366f1">AI GENERATOR</text>
+</svg>

@@ -27,3 +27,18 @@ Not started. Kept here so the ideas are not lost between sessions.
 
 - Saved job targets so users can compare a CV against several postings over time.
 - Export match history to CSV.
+
+## Job discovery
+
+- **Retry cap for unreadable postings.** A fetch that fails is deliberately left unscored
+  and retried on the next run. Add a retry counter so a permanently dead posting stops
+  being re-fetched eventually.
+- **Optional "no matches today" digest.** The digest builder already renders an empty list;
+  today it is simply not sent when nothing clears the threshold. Make it a setting.
+- **Track applications.** Let a match be marked applied so it drops out of the next digest
+  and the Jobs page can show what was already sent.
+- **Compensation estimate in the digest.** The match analysis already knows the role; reuse
+  `src/compensation/estimator.py` to add a pay range to each digest entry.
+- **More sources.** LinkedIn's guest search is fragile by nature. `src/linkedin/jobs.py`
+  is the only place that speaks to it, so a second source can be added behind the same
+  `search`/`fetch_detail` shape.

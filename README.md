@@ -1,4 +1,4 @@
-![Job-CV generator logo](images/job_cv_ai_generator.jpg)
+![Job-CV AI Generator logo](images/logo.svg)
 
 # Job-CV Matcher & Tailor
 
@@ -41,7 +41,7 @@ If you are on Windows, **please use Git Bash** or **WSL** to run `make` commands
 
 > **Alternative:** You can also run the app directly with `streamlit run landing.py` (see below) without using `make`.
 
-`landing.py` is the entrypoint (the marketing landing page at `/`); the actual tool lives in `pages/app.py` (`/app`), the account/CV page in `pages/profile.py` (`/profile`), and past analyses in `pages/history.py` (`/history`).
+`landing.py` is the entrypoint (the marketing landing page at `/`); the actual tool lives in `pages/app.py` (`/app`), the account/CV page in `pages/profile.py` (`/profile`), past analyses in `pages/history.py` (`/history`), and LinkedIn job discovery in `pages/jobs.py` (`/jobs`), with the OAuth redirect landing on `pages/linkedin_callback.py` (`/linkedin_callback`).
 
 ---
 
@@ -143,6 +143,66 @@ the older `/?verify=` links.
 `/confirm` is a separate route on purpose: if the app sits behind Cloudflare Access,
 exempt `jobcv.luilver.com/confirm*` for everyone so subscribers can confirm without a
 Cloudflare login, while the rest of the app stays private.
+
+---
+
+## Job Discovery (LinkedIn)
+
+A daily pass that searches LinkedIn's public guest job search for remote roles, scores
+each posting against your stored CV, and emails one digest of the matches with a tailored
+CV and cover letter attached. It is on the **Job Discovery** page (`/jobs`).
+
+**Nothing is submitted to LinkedIn.** Postings are only read. The digest links to each
+posting so you apply yourself. This is a deliberate limit, not a missing feature: applying
+requires a member session and automating it violates LinkedIn's terms and risks the account.
+
+### Connect LinkedIn
+
+1. Create an app at <https://www.linkedin.com/developers/apps> and request the
+   **Sign In with LinkedIn using OpenID Connect** product.
+2. Under **Auth → OAuth 2.0 settings**, add this redirect URL *exactly*:
+   `{APP_BASE_URL}/linkedin_callback`
+3. Put the credentials in `.streamlit/secrets.toml` (see `secrets.toml.example`):
+
+   ```toml
+   LINKEDIN_CLIENT_ID     = "..."
+   LINKEDIN_CLIENT_SECRET = "..."
+   ```
+
+Only the three consumer OIDC scopes (`openid profile email`) are requested. Your name,
+email and member id are stored; the access token is discarded as soon as the profile is
+read. No LinkedIn credentials are ever kept.
+
+### How a run scores postings
+
+Search cards carry a title, company and location — but no description, so a keyword score
+on the card alone would reject every real match. The run is therefore staged, cheapest
+work first:
+
+1. **Card triage** — a recall-biased yes/no so only plausible postings cost a fetch.
+2. **Fetch descriptions** for the survivors, capped at 25.
+3. **Keyword prefilter** on title + description, keeping the best few.
+4. **AI review** — one call per survivor, up to `daily_llm_budget`.
+5. **Write materials** for the top matches, up to `daily_gen_budget`.
+
+Every posting the run considers is recorded, including the ones turned down, so a run
+searches each posting once and never re-fetches it.
+
+### Run it daily
+
+```bash
+# In docker-compose, the `worker` service polls and runs whatever is due.
+docker compose up -d worker
+
+# Or run a pass by hand:
+.venv/bin/python scripts/daily_digest.py --dry-run     # who would run
+.venv/bin/python scripts/daily_digest.py                # everyone due now
+.venv/bin/python scripts/daily_digest.py --user-id 1    # one account, ignoring the hour
+```
+
+Each account has a digest hour and timezone under its discovery settings. The database
+records when a digest last went out, so a restart or a second worker cannot send a
+duplicate — the once-a-day stamp, not the scheduler, is what makes it safe.
 
 ---
 
