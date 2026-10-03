@@ -236,3 +236,56 @@ def smtp_port() -> int:
 
 def smtp_use_starttls() -> bool:
     return load_smtp_config().get("SMTP_USE_STARTTLS", "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
+# ---------------------------------------------------------------------------
+# LinkedIn "Sign In with LinkedIn" (OpenID Connect)
+# ---------------------------------------------------------------------------
+#
+# What these credentials are for: identity only. LinkedIn's consumer OIDC
+# product exposes exactly three scopes -- openid, profile, email -- and returns
+# the member's name, email address and picture. There is no LinkedIn API for
+# searching jobs or submitting applications; job discovery in this app reads
+# LinkedIn's public logged-out job search (see src/linkedin/jobs.py).
+#
+# Register an app at https://www.linkedin.com/developers/apps and add the
+# "Sign In with LinkedIn using OpenID Connect" product. The redirect URL must
+# match linkedin_redirect_uri() exactly or the token exchange is refused.
+
+LINKEDIN_AUTHORIZE_URL = "https://www.linkedin.com/oauth/v2/authorization"
+LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
+LINKEDIN_USERINFO_URL = "https://api.linkedin.com/v2/userinfo"
+LINKEDIN_SCOPES = "openid profile email"
+
+LINKEDIN_CLIENT_ID_KEYS = ("LINKEDIN_CLIENT_ID",)
+LINKEDIN_CLIENT_SECRET_KEYS = ("LINKEDIN_CLIENT_SECRET",)
+LINKEDIN_REDIRECT_URI_KEYS = ("LINKEDIN_REDIRECT_URI",)
+
+
+def linkedin_client_id() -> str:
+    return _lookup_secret(*LINKEDIN_CLIENT_ID_KEYS)
+
+
+def linkedin_client_secret() -> str:
+    return _lookup_secret(*LINKEDIN_CLIENT_SECRET_KEYS)
+
+
+def linkedin_redirect_uri() -> str:
+    """Where LinkedIn sends the browser back to. Override with LINKEDIN_REDIRECT_URI."""
+    override = _lookup_secret(*LINKEDIN_REDIRECT_URI_KEYS)
+    if override:
+        return override.rstrip("/")
+    return f"{app_base_url()}/linkedin_callback"
+
+
+def is_linkedin_configured() -> bool:
+    return bool(linkedin_client_id() and linkedin_client_secret())
+
+
+def linkedin_setup_hint() -> str:
+    return (
+        "LinkedIn is not configured yet. Create an app at https://www.linkedin.com/developers/apps, "
+        'add the "Sign In with LinkedIn using OpenID Connect" product, then set LINKEDIN_CLIENT_ID '
+        "and LINKEDIN_CLIENT_SECRET in .streamlit/secrets.toml (or credentials.json, or the "
+        f"environment). Register this exact redirect URL on the app: {linkedin_redirect_uri()}"
+    )
