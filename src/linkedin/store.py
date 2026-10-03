@@ -368,7 +368,8 @@ def last_run_report(user_id: int) -> dict[str, Any] | None:
     conn = get_connection()
     try:
         row = conn.execute(
-            "SELECT last_run_report FROM discovery_settings WHERE user_id = ?", (int(user_id),)
+            "SELECT last_run_at, last_run_report FROM discovery_settings WHERE user_id = ?",
+            (int(user_id),),
         ).fetchone()
     finally:
         conn.close()
@@ -378,7 +379,11 @@ def last_run_report(user_id: int) -> dict[str, Any] | None:
         loaded = json.loads(row["last_run_report"])
     except (TypeError, ValueError):
         return None
-    return loaded if isinstance(loaded, dict) else None
+    if not isinstance(loaded, dict):
+        return None
+    # The timestamp lives in its own column; the UI reads it from the report.
+    loaded.setdefault("last_run_at", str(row["last_run_at"] or ""))
+    return loaded
 
 
 def mark_digest_sent(user_id: int) -> None:
@@ -820,14 +825,20 @@ def kit_count_today(user_id: int) -> int:
 
 
 def evaluations_today(user_id: int) -> int:
-    """How many postings this user has already scored today (UTC)."""
+    """How many postings this user has had scored by the LLM today (UTC).
+
+    Free prefilter and triage rejections are stored as evaluations too, so that a
+    run stays idempotent, but they cost nothing. Only a row carrying an analysis
+    came from a paid model call, and only those may consume the daily LLM budget.
+    """
     init_db()
     conn = get_connection()
     try:
         row = conn.execute(
             """
             SELECT COUNT(*) AS total FROM job_evaluations
-             WHERE user_id = ? AND evaluated_at >= datetime('now', '-1 day')
+             WHERE user_id = ? AND analysis <> ''
+               AND evaluated_at >= datetime('now', '-1 day')
                AND date(evaluated_at) = date('now')
             """,
             (int(user_id),),

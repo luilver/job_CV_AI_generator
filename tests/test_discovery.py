@@ -257,6 +257,29 @@ def test_upsert_job_is_idempotent(user_id):
     assert store.get_job(first)["title"] == "Renamed"
 
 
+def test_last_run_report_includes_the_timestamp(user_id):
+    store.mark_run(user_id, {"status": "ok", "reason": "done"})
+    report = store.last_run_report(user_id)
+    assert report is not None
+    assert report["status"] == "ok"
+    assert report["last_run_at"]
+
+
+def test_free_rejections_do_not_consume_the_llm_budget(user_id):
+    rejected = store.upsert_job(CARD_PYTHON)
+    scored = store.upsert_job(CARD_MARKETING)
+    store.mark_rejected(user_id, [rejected], prefilter_score=4)
+    assert store.evaluations_today(user_id) == 0
+    store.record_evaluation(
+        user_id,
+        scored,
+        prefilter_score=50,
+        match_score=88,
+        analysis={"brief_description": "a real model call"},
+    )
+    assert store.evaluations_today(user_id) == 1
+
+
 def test_unscored_job_ids(user_id):
     job_id = store.upsert_job(CARD_PYTHON)
     assert job_id in store.unscored_job_ids(user_id)
